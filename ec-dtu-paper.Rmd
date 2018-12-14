@@ -1,9 +1,9 @@
 ---
-title: "Fast and accurate differential transcript usage by modelling equivalence classes"
+title: "Fast and accurate differential transcript usage by testing equivalence class counts"
 author:
 - Marek Cmero^1
-- Nadia Davidson^1
-- Alicia Oshlack^1,2^*
+- Nadia Davidson^1†^
+- Alicia Oshlack^1,2†^*
 output:
   html_document:
     df_print: paged
@@ -12,6 +12,8 @@ output:
 ^1^ Murdoch Chidren's Research Institute, Melbourne, Victoria, Australia
 ^2^ School of Biosciences, Faculty of Science, University of Melbourne,
 Melbourne, Victoria, Australia
+
+^†^ These authors contributed equally in supervision of this work.
 
 \* Corresponding author
 
@@ -293,7 +295,15 @@ iters = 20
 res_ec <- NULL
 res_tx <- NULL
 res_ex <- NULL
+
+# seeds used for paper analysis
+seeds <- c(7601, 6989, 3551, 2774, 1389,
+           1471, 6763, 5167, 3342, 1642,
+           6589, 9151, 4694, 1917, 4324,
+           5513, 2414, 1424, 6536, 7624)
+
 for(i in 1:iters) {
+    set.seed(seeds[i])
     comp <- get_random_comp(samples, N)
 
     # equivalence classes
