@@ -179,6 +179,7 @@ grid.arrange(f2a, f2b, nrow=2)
 
 
 ```{r run-diffsplice}
+group <- rep(c('c1','c2'), each=3)
 dm_ec_results <- run_diffsplice(dm_ec, group, 'Dm', feature='ec')
 dm_tx_results <- run_diffsplice(dm_tx, group, 'Dm', feature='tx')
 dm_ex_results <- run_diffsplice(dm_ex, group, 'Dm', feature='ex')
@@ -187,6 +188,8 @@ hs_ec_results <- run_diffsplice(hs_ec, group, 'Hs', feature='ec')
 hs_tx_results <- run_diffsplice(hs_tx, group, 'Hs', feature='tx')
 hs_ex_results <- run_diffsplice(hs_ex, group, 'Hs', feature='ex')
 
+sample_order <- colnames(bm_ec[,.SD,.SDcols = names(bm_ec) %like% 'SRR'])
+group <- as.numeric(sample_order %in% bm_group1)
 bm_ec_results <- run_diffsplice(bm_ec, group, 'SRR', feature='ec')
 bm_tx_results <- run_diffsplice(bm_tx, group, 'SRR', feature='tx')
 bm_ex_results <- run_diffsplice(bm_ex, group, 'SRR', feature='ex')
