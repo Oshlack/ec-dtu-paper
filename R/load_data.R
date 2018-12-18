@@ -1,12 +1,17 @@
-load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=T) {
-    lookup <- read.delim(gzfile(tx_lookup), sep=' ', header=F)
-    colnames(lookup) <- c('transcript', 'ensembl_id')
+load_ec_data <- function(ec_matrix_file, tx_lookup, reference, filter_multi_ecs=T, salmon=T) {
+    df <- fread(paste('zcat <', ec_matrix_file))
 
     gtx <- read.delim(gzfile(reference), header=F, sep=' ')
     colnames(gtx) <- c('gene_id', 'ensembl_id', 'exon', 'symbol', 'exon_id')
 
-    x <- fread(paste('zcat <', ec_matrix_file))
-    df <- inner_join(x, lookup, by='transcript')
+    if(salmon){
+        lookup <- read.delim(gzfile(tx_lookup), sep=' ', header=F)
+        colnames(lookup) <- c('transcript', 'ensembl_id')
+        df <- inner_join(df, lookup, by='transcript')
+    } else {
+        colnames(df)[colnames(df)=='transcript'] <- 'ensembl_id'
+    }
+
     df <- inner_join(df, gtx, by='ensembl_id')
 
     if(filter_multi_ecs) {

@@ -319,7 +319,7 @@ seeds <- c(7601, 6989, 3551, 2774, 1389,
 
 for(i in 1:iters) {
     set.seed(seeds[i])
-    comp <- get_random_comp(samples, N)
+    comp <- get_random_comp(bm_samples, N)
 
     # equivalence classes
     counts <- data.frame(counts_ec[,.SD,.SDcols = names(counts_ec) %in% comp$sample])
@@ -399,6 +399,55 @@ ggplot(rp, aes(gene_rank, false_positives, colour = feature)) +
           text = element_text(size = 18))
 ```
 
+# Supplementary Figure 5
+
+Kallisto[4] versus salmon's[5] performance on the Bottomly subset testing experiments, using each method's significant genes from the full (10 vs. 10) run as the truth set for calculating both metrics.
+
+```{r SupplementaryFigure5, fig.width=12, fig.height=5.25}
+# load in kallisto data
+bm_kec <- load_ec_data('data/bottomly/ec_counts/bottomly_kallisto_ec_counts.txt.gz', NA, bm_ref, salmon=F)
+counts_kec <- distinct(bm_kec[,.SD,.SDcols = names(bm_kec) %like% 'SRR|gene_id|ec_names'])
+genes_kec <- distinct(bm_kec[,.SD,.SDcols = names(bm_kec) %in% c('gene_id', 'ec_names')])
+colnames(genes_kec)[1] <- 'feature_id'
+
+# run diffsplice
+sample_order <- colnames(bm_kec[,.SD,.SDcols = names(bm_kec) %like% 'SRR'])
+group <- as.numeric(sample_order %in% bm_group1)
+bm_kec_results <- run_diffsplice(bm_kec, group, 'SRR', feature='ec')
+
+# run kallisto iteration tests on Bottomly data (using same seeds as before)
+for(i in 1:iters) {
+    set.seed(seeds[i])
+    comp <- get_random_comp(bm_samples, N)
+
+    counts <- data.frame(counts_kec[,.SD,.SDcols = names(counts_kec) %in% comp$sample])
+    res_kec[[i]] <- run_dexseq(counts, genes_kec, comp$type, 0, 0)[['gene_FDR']]; gc()
+}
+
+# calculate kallisto results
+kal_bm_qec <- bm_kec_results[['gene_FDR']]
+true_kec <- unique(kal_bm_qec[kal_bm_qec$FDR<cutoff,]$gene)
+kal_res <- get_subset_tests_results(res_kec, res_tx, res_ex,
+                                    true_kec, true_tx, true_ex,
+                                    method = c(FDR='individual', TPR='individual'))
+kal_res <- kal_res[kal_res$feature %in% 'Equivalence classes', ]
+
+# use last salmon results for comparison (individual FDR/TPR calculation)
+sal_res <- results[results$feature %in% 'Equivalence classes', ]
+
+# set up results for plotting
+kal_res <- melt(kal_res[,c('iter', 'FDR', 'TPR')], id.vars='iter', value.name='kallisto')
+sal_res <- melt(sal_res[,c('iter', 'FDR', 'TPR')], id.vars='iter', value.name='salmon')
+res <- merge(sal_res, kal_res, by=c('iter', 'variable'))
+
+ggplot(res, aes(salmon, kallisto)) +
+    geom_abline(slope = 1, intercept = 0, colour = 'grey') +
+    geom_point() +
+    theme_bw() +
+    xlim(0,1) + ylim(0,1) +
+    facet_wrap(~variable)
+```
+
 # References
 
 [1] Love, M. I., Huber, W., & Anders, S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15(12), 1–21. https://doi.org/10.1186/s13059-014-0550-8
@@ -406,3 +455,7 @@ ggplot(rp, aes(gene_rank, false_positives, colour = feature)) +
 [2] Bottomly, D., Walter, N. A. R., Hunter, J. E., Darakjian, P., Kawane, S., Buck, K. J., … Hitzemann, R. (2011). Evaluating gene expression in C57BL/6J and DBA/2J mouse striatum using RNA-Seq and microarrays. PLoS ONE, 6(3). https://doi.org/10.1371/journal.pone.0017820
 
 [3] Soneson, C., Matthes, K. L., Nowicka, M., Law, C. W., & Robinson, M. D. (2016). Isoform prefiltering improves performance of count-based methods for analysis of differential transcript usage. Genome Biology, 17(1), 1–15. https://doi.org/10.1186/s13059-015-0862-3
+
+[4] Bray, N. L., Pimentel, H., Melsted, P., & Pachter, L. (2016). Near-optimal probabilistic RNA-seq quantification. Nature Biotechnology, 34(5), 525–527. https://doi.org/10.1038/nbt.3519
+
+[5] Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., & Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. Nature Methods, 14(4), 021592. https://doi.org/10.1038/nmeth.4197
