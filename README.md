@@ -26,7 +26,7 @@ Please install the following R packages:
 ```
 install.packages('ggplot2')
 install.packages('gridExtra')
-install.packages('UpSetR')
+install.packages('VennDiagram')
 install.packages('RColorBrewer')
 install.packages('data.table')
 install.packages('readr')

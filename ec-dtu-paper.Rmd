@@ -39,7 +39,8 @@ knitr::opts_chunk$set(autodep        = TRUE,
 # plotting
 library(ggplot2)
 library(gridExtra)
-library(UpSetR)
+# library(UpSetR)
+library(VennDiagram)
 library(RColorBrewer)
 
 # DE/DTU
@@ -259,7 +260,7 @@ f3a <- ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
 
 Shows the significant genes (FDR < 0.05) shared between the methods, obtained from DEXSeq run on the full Bottomly et al.[2] data set for each feature.
 
-```{r SupplementaryFigure2, fig.width=12, fig.height=6}
+```{r SupplementaryFigure2, fig.width=6, fig.height=6}
 genes_ec <- distinct(bm_ec[,.SD,.SDcols = names(bm_ec) %in% c('gene_id', 'ec_names')])
 genes_tx <- distinct(bm_tx[,.SD,.SDcols = names(bm_tx) %in% c('gene_id', 'ensembl_id')])
 genes_ex <- distinct(bm_ex[,.SD,.SDcols = names(bm_ex) %in% c('gene_id', 'exon_id')])
@@ -284,7 +285,18 @@ dt_truth[['Equivalence classes']] <- true_ec
 dt_truth[['Transcripts']] <- true_tx
 dt_truth[['Exons']] <- true_ex
 
-upset(fromList(dt_truth), text.scale = 2)
+# upset(fromList(dt_truth), text.scale = 2)
+
+cols <- brewer.pal(3, 'Set3')
+venn.plot <- venn.diagram(dt_truth,
+                          NULL,
+                          fill=cols,
+                          alpha=c(0.5,0.5,0.5),
+                          cex = 2,
+                          cat.fontface=1,
+                          category.names=names(dt_truth),
+                          main="", scaled=FALSE)
+grid.draw(venn.plot)
 ```
 
 # Figure 3
@@ -335,26 +347,26 @@ grid.arrange(f3a, f3b, f3c, layout_matrix=rbind(c(1,1), c(2,3)), nrow=2)
 
 # Supplementary Figure 3
 
-Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 10) of the Bottomly et al.[2] data using random subset of 3 vs. 3 samples across 20 iterations. Each row uses a different 'truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
+Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 10) of the Bottomly et al.[2] data using random subsets of 3 vs. 3 samples across 20 iterations. The lines between the plots join data points from the same iteration. Each row uses a different 'truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
 
 ```{r SupplementaryFigure3, fig.width=12, fig.height=15.75}
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='union', TPR='union'))
-s3a <- plot_bottomly_boxplot(results, cols, title='FDR (union)', toplot='FDR', hline=cutoff)
-s3b <- plot_bottomly_boxplot(results, cols, title='TPR (union)', toplot='TPR')
+s3a <- plot_bottomly_boxplot(results, cols, title='FDR (union)', toplot='FDR', hline=cutoff, lines=T)
+s3b <- plot_bottomly_boxplot(results, cols, title='TPR (union)', toplot='TPR', lines=T)
 
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='intersect', TPR='intersect'))
-s3c <- plot_bottomly_boxplot(results, cols, title='FDR (intersect)', toplot='FDR', hline=cutoff)
-s3d <- plot_bottomly_boxplot(results, cols, title='TPR (intersect)', toplot='TPR')
+s3c <- plot_bottomly_boxplot(results, cols, title='FDR (intersect)', toplot='FDR', hline=cutoff, lines=T)
+s3d <- plot_bottomly_boxplot(results, cols, title='TPR (intersect)', toplot='TPR', lines=T)
 
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='individual', TPR='individual'))
-s3e <- plot_bottomly_boxplot(results, cols, title='FDR (individual)', toplot='FDR', hline=cutoff)
-s3f <- plot_bottomly_boxplot(results, cols, title='TPR (individual)', toplot='TPR')
+s3e <- plot_bottomly_boxplot(results, cols, title='FDR (individual)', toplot='FDR', hline=cutoff, lines=T)
+s3f <- plot_bottomly_boxplot(results, cols, title='TPR (individual)', toplot='TPR', lines=T)
 
 grid.arrange(s3a, s3b,
              s3c, s3d,
