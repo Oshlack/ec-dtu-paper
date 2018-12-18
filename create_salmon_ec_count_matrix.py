@@ -2,7 +2,7 @@
 # Author: Marek Cmero
 ##############################################################
 '''
-Module      : create_ec_count_matrix
+Module      : create_salmon_ec_count_matrix
 Description : Create equivalence class matrix from salmon.
 Copyright   : (c) Marek Cmero, Dec 2018
 License     : MIT
@@ -11,7 +11,6 @@ Portability : POSIX
 Match salmon equivalence class output files from multiple
 samples and create a matrix with EC counts and transcript IDs
 '''
-
 
 import os
 import argparse

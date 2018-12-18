@@ -42,20 +42,36 @@ biocLite('tximport')
 Generating an equivalence class matrix
 --------------------------------------
 
-Under the data folder, a matrix of equivalence class results is included per data set. This was generated using the included python script `create_ec_count_matrix.py`. This script is designed to be run on Salmon[3] output, and can be run as follows:
+Under the data folder, a matrix of equivalence class results is included per data set. This was generated using the included python script `create_salmon_ec_count_matrix.py`. This script is designed to be run on Salmon[3] output, and can be run as follows:
 
 ```
-python create_ec_count_matrix.py <eq_classes> <samples> <outfile>
+python create_salmon_ec_count_matrix.py <eq_classes> <samples> <outfile>
 ```
 
 For example:
 ```
-python create_ec_count_matrix.py \
+python create_salmon_ec_count_matrix.py \
        sample1/aux_info/eq_classes.txt sample2/aux_info/eq_classes.txt \
        sample1,sample2 ec_matrix.txt
 ```
 
-[numpy](https://pypi.org/project/numpy/) and [pandas](https://pandas.pydata.org/) is required to run the script.
+A script for transforming Kallisto[4] output is also included. Kallisto must be run using the `--batch` parameter (see [https://pachterlab.github.io/kallisto/manual](https://pachterlab.github.io/kallisto/manual)), with all samples concurrently. The usage for the script is as follows:
+
+```
+usage: create_kallisto_ec_count_matrix.py [-h]
+                                          ec_file counts_file samples_file
+                                          tx_ids_file out_file
+
+positional arguments:
+  ec_file       Kallisto equivalence class file (matrix.ec).
+  counts_file   Kallisto counts file (matrix.tsv).
+  samples_file  Kallisto samples file (matrix.cells).
+  tx_ids_file   File containing one transcript ID per line, in same order as
+                the fasta reference used for kallisto.
+  out_file      Output file.
+```
+
+[numpy](https://pypi.org/project/numpy/) and [pandas](https://pandas.pydata.org/) is required to run both scripts.
 
 References
 ----------
@@ -65,3 +81,5 @@ References
 [2] Soneson, C., Matthes, K. L., Nowicka, M., Law, C. W., & Robinson, M. D. (2016). Isoform prefiltering improves performance of count-based methods for analysis of differential transcript usage. Genome Biology, 17(1), 1–15. https://doi.org/10.1186/s13059-015-0862-3
 
 [3] Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., & Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. Nature Methods, 14(4), 021592. https://doi.org/10.1038/nmeth.4197
+
+[4] Bray, N. L., Pimentel, H., Melsted, P., & Pachter, L. (2016). Near-optimal probabilistic RNA-seq quantification. Nature Biotechnology, 34(5), 525–527. https://doi.org/10.1038/nbt.3519
