@@ -152,6 +152,9 @@ feat_var <- rbind(feat_var,
 
 feat_var$species <- factor(feat_var$species, levels=c('drosophila', 'hsapiens', 'bottomly'))
 
+# show mean log2 var/means
+print(data.table(feat_var)[, mean(log2(variance / mean)), by=c('data','species')])
+
 # plot results
 cols <- c('Transcripts' = '#ff7f00',
           'Exons' = '#e41a1c',
@@ -224,7 +227,7 @@ results[['dexseq_exons']] <- dm_ex_results[['gene_FDR']]
 
 truth <- read.delim('ref/soneson_results/truth_drosophila_non_null_missing20_ms.txt')
 test <- read.delim('ref/soneson_results/merged_results_all_drosophila.txt')
-test_reduced <- test[,grep('gene|featurecounts_flat|kallisto', colnames(test))]
+test_reduced <- test[,grep('gene|featurecounts_flat|kallisto|miso', colnames(test))]
 
 res <- get_fdr_tpr_stats(test_reduced, truth, results, thresholds, 'drosophila')
 
@@ -235,7 +238,7 @@ results[['dexseq_exons']] <- hs_ex_results[['gene_FDR']]
 
 truth <- read.delim('ref/soneson_results/truth_human_non_null_missing20_ms.txt')
 test <- read.delim('ref/soneson_results/merged_results_all_human.txt')
-test_reduced <- test[,grep('gene|featurecounts_flat|kallisto', colnames(test))]
+test_reduced <- test[,grep('gene|featurecounts_flat|kallisto|miso', colnames(test))]
 
 res <- rbind(res,
              get_fdr_tpr_stats(test_reduced, truth, results, thresholds, 'hsapiens'))
@@ -301,7 +304,7 @@ grid.draw(venn.plot)
 
 # Figure 3
 
-Shows the performance of the equivalence class method for differential transcript usage, compared to other state-of-the-art methods described in Soneson et al.[3] (top). The bottom plots show the ability of the equivalence class, transcript and exon-based methods to recreate the results of a full comparison (10 vs. 10) of the Bottomly data, using only a (randomly selected) subset of samples (3 vs. 3) across 20 iterations. The union of all genes called as significant across all three methods is used for the FDR, and the intersect (genes called by all three methods) is used for the TPR. Full results (union, intersect and each method's individual truth set) is shown in Supplementary Figure 3.
+Shows the performance of the equivalence class method for differential transcript usage, compared to other state-of-the-art methods described in Soneson et al.[3] (top). The bottom plots show the ability of the equivalence class, transcript and exon-based methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly data, using only a (randomly selected) subset of samples (3 vs. 3) across 20 iterations. The union of all genes called as significant across all three methods is used for the FDR, and the intersect (genes called by all three methods) is used for the TPR. Full results (union, intersect and each method's individual truth set) is shown in Supplementary Figure 3.
 
 ```{r Figure3, fig.width=12, fig.height=10.5}
 # Bottomly data subset testing
@@ -347,7 +350,7 @@ grid.arrange(f3a, f3b, f3c, layout_matrix=rbind(c(1,1), c(2,3)), nrow=2)
 
 # Supplementary Figure 3
 
-Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 10) of the Bottomly et al.[2] data using random subsets of 3 vs. 3 samples across 20 iterations. The lines between the plots join data points from the same iteration. Each row uses a different 'truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
+Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly et al.[2] data using random subsets of 3 vs. 3 samples across 20 iterations. The lines between the plots join data points from the same iteration. Each row uses a different 'truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
 
 ```{r SupplementaryFigure3, fig.width=12, fig.height=15.75}
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
@@ -401,7 +404,7 @@ ggplot(rp, aes(gene_rank, false_positives, colour = feature)) +
 
 # Supplementary Figure 5
 
-Kallisto[4] versus salmon's[5] performance on the Bottomly subset testing experiments, using each method's significant genes from the full (10 vs. 10) run as the truth set for calculating both metrics.
+Kallisto[4] versus salmon's[5] performance on the Bottomly subset testing experiments, using each method's significant genes from the full (10 vs. 11) run as the truth set for calculating both metrics.
 
 ```{r SupplementaryFigure5, fig.width=12, fig.height=5.25}
 # load in kallisto data
@@ -416,6 +419,7 @@ group <- as.numeric(sample_order %in% bm_group1)
 bm_kec_results <- run_diffsplice(bm_kec, group, 'SRR', feature='ec')
 
 # run kallisto iteration tests on Bottomly data (using same seeds as before)
+res_kec <- NULL
 for(i in 1:iters) {
     set.seed(seeds[i])
     comp <- get_random_comp(bm_samples, N)
