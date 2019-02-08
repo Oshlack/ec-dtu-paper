@@ -117,7 +117,7 @@ bm_group2 <- bm_samples$sample[bm_samples$type=='D2']
 
 The number of transcripts, equivalence classes and exons per gene (top), where each feature has at least one associated read. The density of the variance of counts over the mean (bottom) for each feature (calculated per condition).
 
-```{r Figure2}
+```{r Figure2, fig.width=15, fig.height=10}
 # get count summaries by feature type
 feat_summary <- count_features(hs_ec, hs_tx, hs_ex, 'hsapiens', 'Hs')
 feat_summary <- rbind(feat_summary, count_features(dm_ec, dm_tx, dm_ex, 'drosophila', 'Dm'))
@@ -163,18 +163,19 @@ f2a <- ggplot(feat_summary, aes(feature, V1)) +
             geom_boxplot(alpha = 0.6) +
             theme_bw() +
             theme(legend.position = 'none',
-                  text = element_text(size = 18)) +
+                  text = element_text(size = 20)) +
             scale_y_log10(limits=c(1, 1000)) +
             ylab('number per gene') +
             xlab('') +
-            facet_wrap(~species)
+            facet_wrap(~species) +
+            scale_x_discrete(labels = c('Transcripts', 'ECs', 'Exons'))
 
 f2b <- ggplot(feat_var, aes(log2(variance / mean), colour = data)) +
             geom_density(adjust=3) +
             theme_bw() +
             theme(legend.title = element_blank(),
                   legend.position = 'bottom',
-                  text = element_text(size = 18)) +
+                  text = element_text(size = 20)) +
             scale_colour_manual(values = cols) +
             facet_grid(~species)
 
