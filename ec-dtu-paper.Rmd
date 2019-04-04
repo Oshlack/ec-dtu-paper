@@ -248,6 +248,13 @@ res$method <- gsub('.adjP', '', res$method)
 res$method <- gsub('dexseq_', '', res$method)
 res$method[res$method=='exons'] <- 'dexseq_count_exons'
 
+cols <- c('salmon' = '#4daf4a',
+          'equivalence_class' = '#377eb8',
+          'dexseq_count_exons' = '#e41a1c',
+          'kallisto' = '#984ea3',
+          'featurecounts_flat' = '#ff7f00',
+          'miso_assignable' = '#ffd92f')
+
 f3a <- ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
         geom_line(size=0.5) +
         geom_point(size=2, shape=1, stroke=1) + theme_bw() + ylim(0,1) + xlim(0,1) +
@@ -257,7 +264,7 @@ f3a <- ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
         theme(legend.position = 'bottom',
               legend.title = element_blank(),
               text = element_text(size = 18)) +
-        scale_color_brewer(palette = 'Set1')
+        scale_color_manual(values = cols)
 ```
 
 # Supplementary Figure 2
@@ -452,6 +459,79 @@ ggplot(res, aes(salmon, kallisto)) +
     xlim(0,1) + ylim(0,1) +
     facet_wrap(~variable)
 ```
+
+# Supplementary Figure 6
+
+Shows the performance of the equivalence class, transcript (Salmon) and exon-based (DEXSeq-count) methods with _DRIMSeq_ filtering (minimum feature expression = 10, minimum gene expression = 10, gene must be expressed in at all 6 samples and transcript must be expressed in at least 3 samples).
+
+```{r SupplementaryFigure6, fig.width=12, fig.height=5.25}
+group <- rep(c('c1','c2'), each=3)
+dm_ec_filt <- run_diffsplice(dm_ec, group, 'Dm', feature='ec', simple_filter=TRUE)
+dm_tx_filt <- run_diffsplice(dm_tx, group, 'Dm', feature='tx', simple_filter=TRUE)
+dm_ex_filt <- run_diffsplice(dm_ex, group, 'Dm', feature='ex', simple_filter=TRUE)
+
+hs_ec_filt <- run_diffsplice(hs_ec, group, 'Hs', feature='ec', simple_filter=TRUE)
+hs_tx_filt <- run_diffsplice(hs_tx, group, 'Hs', feature='tx', simple_filter=TRUE)
+hs_ex_filt <- run_diffsplice(hs_ex, group, 'Hs', feature='ex', simple_filter=TRUE)
+
+results <- NULL
+results[['equivalence_class']] <- dm_ec_results[['gene_FDR']]
+results[['salmon']] <- dm_tx_results[['gene_FDR']]
+results[['dexseq_count_exons']] <- dm_ex_results[['gene_FDR']]
+results[['equivalence_class_filt']] <- dm_ec_filt[['gene_FDR']]
+results[['salmon_filt']] <- dm_tx_filt[['gene_FDR']]
+results[['dexseq_count_exons_filt']] <- dm_ex_filt[['gene_FDR']]
+
+truth <- read.delim('ref/soneson_results/truth_drosophila_non_null_missing20_ms.txt')
+test <- read.delim('ref/soneson_results/merged_results_all_drosophila.txt')
+res <- get_fdr_tpr_stats(test, truth, results, thresholds, 'drosophila', filt_genes=TRUE)
+
+results <- NULL
+results[['equivalence_class']] <- hs_ec_results[['gene_FDR']]
+results[['salmon']] <- hs_tx_results[['gene_FDR']]
+results[['dexseq_count_exons']] <- hs_ex_results[['gene_FDR']]
+results[['equivalence_class_filt']] <- hs_ec_filt[['gene_FDR']]
+results[['salmon_filt']] <- hs_tx_filt[['gene_FDR']]
+results[['dexseq_count_exons_filt']] <- hs_ex_filt[['gene_FDR']]
+
+truth <- read.delim('ref/soneson_results/truth_human_non_null_missing20_ms.txt')
+test <- read.delim('ref/soneson_results/merged_results_all_human.txt')
+res <- rbind(res,
+             get_fdr_tpr_stats(test, truth, results, thresholds, 'hsapiens', filt_genes=TRUE))
+res <- res[res$method%like%'salmon|equiv|exon',]
+
+cols <- c('salmon' = '#fdae6b',
+          'salmon_filt' = '#e6550d',
+          'equivalence_class' = '#9ecae1',
+          'equivalence_class_filt' = '#3182bd',
+          'dexseq_count_exons' = '#a1d99b',
+          'dexseq_count_exons_filt' = '#31a354')
+res$method <- factor(res$method, levels=names(cols))
+ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
+        geom_line(size=0.5) +
+        geom_point(size=2, shape=1, stroke=1) + theme_bw() + ylim(0,1) + xlim(0,1) +
+        geom_vline(xintercept = thresholds,
+                   colour='grey',
+                   linetype='dotted') + facet_wrap(~species) +
+        theme(legend.position = 'bottom',
+              legend.title = element_blank(),
+              text = element_text(size = 18)) +
+        scale_color_manual(values = cols)
+```
+
+# Supplementary Figure 7
+
+An example EC usage plot for a single gene from the hsapiens DECU results. Log EC usage is shown across each equivalence class for both conditions. Yellow blocks indicate significant ECs. As ECs do not correspond easily to genomic locations, no special ordering is applied the the ECs. In the given example, transcripts mapping to each significant EC can be observed in the data. The significant ec142580 corresponds to a single transcript (ENST00000443443), indicating that interpretation can be straight-forward if the EC is associated with a single transcript.
+
+```{r SupplementaryFigure7, fig.width=12, fig.height=5.25}
+# create EC/gene_id lookup table
+lookup <- distinct(hs_ec[,c('gene_id', 'ensembl_id', 'symbol', 'ec_names')])
+lookup$id <- paste(lookup$gene_id, lookup$ec_names, sep=':')
+colnames(lookup)[2] <- 'transcript'
+
+plot_ec_usage(hs_ec_results$dexseq_results, 'ENSG00000004766', lookup)
+```
+
 
 # References
 

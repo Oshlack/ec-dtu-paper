@@ -58,7 +58,15 @@ calculate_stats <- function(thresholds, truth, top, gene_id='gene_id', fdr_id='F
     return(stats)
 }
 
-get_fdr_tpr_stats <- function(test, truth, results, thresholds, species) {
+get_fdr_tpr_stats <- function(test, truth, results, thresholds, species, filt_genes=FALSE) {
+    if (filt_genes) {
+        tested_genes <- rownames(results[[names(results)[1]]])
+        for(rname in 2:length(results)) {
+            rgenes <- rownames(results[[rname]])
+            tested_genes <- intersect(tested_genes, rgenes)
+        }
+        truth <- truth[truth$gene%in%tested_genes,]
+    }
     res <- NULL
     x <- inner_join(test, truth, species, by='gene')
     methods <- colnames(x)[grep('adjP',colnames(x))]

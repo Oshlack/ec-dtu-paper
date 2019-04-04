@@ -26,22 +26,38 @@ run_dexseq <- function(counts, genes, group, cpm_cutoff, n_sample_cutoff, cores=
                 gene_FDR=data.frame(gene=names(pgq), FDR=pgq)))
 }
 
-run_diffsplice <- function(df, group, sample_regex, feature=c('tx', 'ec', 'ex'), cpm_cutoff=0, n_sample_cutoff=0) {
+run_diffsplice <- function(df, group, sample_regex,
+                           feature=c('tx', 'ec', 'ex'),
+                           cpm_cutoff=0, n_sample_cutoff=0,
+                           simple_filter=FALSE) {
     if (feature == 'tx') {
         samps <- data.frame(sample_id = colnames(df)[grep(sample_regex, colnames(df))])
         samps$condition <- as.numeric(as.factor(group)) - 1
 
         d <- get_tx_info(df, samps, sample_regex)
-        samples <- DRIMSeq::samples(d)
-        counts <- round(as.matrix(counts(d)[,-c(1:2)]))
-        genes <- counts(d)[,c(1:2)]
     } else {
         fname <- ifelse(feature == 'ec', 'ec_names', 'exon_id')
-        counts <- distinct(df[,.SD,.SDcols = names(df) %like% paste0(sample_regex, '|gene|', fname)])
-        genes <- data.frame(counts)[,c('gene_id', fname)]
-        colnames(genes)[2] <- 'feature_id'
-        counts <- data.frame(counts)[,grep(sample_regex, colnames(counts))]
+        samples <- names(df)[names(df) %like% sample_regex]
+        sampleTable <- data.frame(sample_id = samples,
+                                  condition = group)
+        df <- data.frame(df)
+        df$feature_id <- df[,fname]
+        df <- distinct(df[,c(samples, 'gene_id', 'feature_id')])
+        d <- dmDSdata(counts = df, samples = sampleTable)
     }
+    if(simple_filter) {
+        n <- length(group)
+        n.small <- min(as.numeric(table(group)))
+        d <- dmFilter(d, min_samps_feature_expr=n.small,
+                      min_feature_expr=10,
+                      min_samps_feature_prop=n.small,
+                      min_samps_gene_expr=n,
+                      min_gene_expr=10)
+    }
+    sample.data <- DRIMSeq::samples(d)
+    counts <- round(as.matrix(counts(d)[,-c(1:2)]))
+    genes <- counts(d)[,c(1:2)]
+
     results <- run_dexseq(counts, genes, group, cpm_cutoff, n_sample_cutoff)
     return(results)
 }
