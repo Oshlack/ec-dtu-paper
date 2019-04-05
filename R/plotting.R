@@ -24,7 +24,7 @@ plot_bottomly_boxplot <- function(results, cols, title='', toplot=c('FDR', 'TPR'
 
 plot_ec_usage <- function(dxr, gene, lookup, ec_col='ec_names', conds=c('c1', 'c2'), FDR=0.05) {
     ids <- lookup[lookup$gene_id == gene,]$id
-    dxg <- data.frame(dxr[ids,])
+    dxg <- data.frame(dxr[rownames(dxr)%in%ids,])
     dxg$id <- rownames(dxg)
 
     significant <- which(dxg$padj < FDR)
@@ -40,10 +40,11 @@ plot_ec_usage <- function(dxr, gene, lookup, ec_col='ec_names', conds=c('c1', 'c
         nextec_idx <- which(ec_order==sigec)+1
         if (nextec_idx > length(ec_order)) {
             nextec <- sigec
+            sig_dat <- rbind(sig_dat, data.frame(ec1=sigec, ec2=Inf))
         } else {
             nextec <- ec_order[nextec_idx]
+            sig_dat <- rbind(sig_dat, data.frame(ec1=sigec, ec2=nextec))
         }
-        sig_dat <- rbind(sig_dat, data.frame(ec1=sigec, ec2=nextec))
     }
 
     g1 <- ggplot(data=mres) +
@@ -56,10 +57,10 @@ plot_ec_usage <- function(dxr, gene, lookup, ec_col='ec_names', conds=c('c1', 'c
         theme(axis.text.x = element_text(angle = 90)) +
         ylab('log EC usage') +
         labs(colour = 'condition') +
+        ylim(0, max(c(dxr[,conds[1]], dxr[,conds[2]]))) +
         ggtitle(gene)
 
     sigecs <- distinct(mres[which(mres$padj < FDR),c(ec_col, 'V1')])
     print(sigecs)
-
     return(g1)
 }
