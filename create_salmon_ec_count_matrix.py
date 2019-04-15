@@ -70,21 +70,25 @@ def build_ec_dict(ec_dict, sample, name):
         ec_dict[tx_id][name] = count
     return(ec_dict)
 
+print('Loading ECs...')
 sample_names = sample_names.split(',')
 assert len(sample_names) == len(ec_files)
 sample_ecs = [load_ecs(file) for file in ec_files]
 
+print('Building EC dictionary...')
 # build EC dictionary
 ec_dict = {}
 for idx, sample_ec in enumerate(sample_ecs):
     ec_dict = build_ec_dict(ec_dict, sample_ec, sample_names[idx])
 
+print('Constructing data frame...')
 # construct counts dataframe
 counts = pd.DataFrame(ec_dict).transpose().fillna(0)
 ec_names = ['ec%d' % (i+1) for i in range(len(counts))]
 counts = counts.assign(ec_names=ec_names)
 counts = counts.assign(tx_ids=counts.index.values)
 
+print('Splitting rows where ECs map to multiple transcripts...')
 # split ECs with multiple transcript IDs into separate rows
 tmp = counts.tx_ids.str.split('|').apply(pd.Series, 1).stack()
 tmp.index = tmp.index.droplevel(-1)
@@ -96,4 +100,5 @@ del counts['tx_ids']
 # transcript IDs > names
 counts['transcript'] = np.array([sample_ecs[0]['transcripts'][tidx] for tidx in counts.tx_id.map(int).values])
 
+print('Writing output...')
 counts.to_csv(outfile, sep='\t', index=False)

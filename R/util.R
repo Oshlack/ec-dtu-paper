@@ -38,7 +38,7 @@ calculate_feature_variance <- function(df, sample_regex, species='drosophila',
 
 calculate_stats <- function(thresholds, truth, top, gene_id='gene_id', fdr_id='FDR') {
     ist <- intersect(truth$gene, top[,gene_id])
-    tr <- subset(truth, gene %in% ist)
+    tr <- distinct(subset(truth, gene %in% ist))
 
     tmp <- top[top[,gene_id] %in% ist, ]
     tmp <- data.table(distinct(tmp[,c(gene_id, fdr_id)]))
