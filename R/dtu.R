@@ -16,9 +16,9 @@ run_dexseq <- function(counts, genes, group, cpm_cutoff, n_sample_cutoff, cores=
     dx <- estimateExonFoldChanges(dx, BPPARAM=BPPARAM)
 
     dxr <- DEXSeqResults(dx)
-    pgq <- perGeneQValue(dxr); gc()
+    pgq <- perGeneQValue(dxr)
 
-    end.time <- Sys.time(); print(start.time); gc()
+    end.time <- Sys.time(); print(start.time)
     print(end.time - start.time)
 
     return(list(dexseq_object=dx,

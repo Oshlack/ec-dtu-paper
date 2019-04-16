@@ -30,19 +30,22 @@ load_ec_data <- function(ec_matrix_file, tx_lookup='', reference='', bmart_dset=
     }
 
     df <- inner_join(df, gtx, by='ensembl_id')
+    df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'ensembl_id', 'exon', 'exon_id', 'symbol')]
+    df <- distinct(data.table(df))
 
     if(filter_multi_ecs) {
-        multi_ecs <- data.table(df)[, length(unique(gene_id)), keyby=ec_names]
+        multi_ecs <- df[, length(unique(gene_id)), keyby=ec_names]
         multi_ecs <- multi_ecs[multi_ecs$V1 > 1]
         multi_ecs <- multi_ecs$ec_names
         df <- df[!df$ec_names %in% multi_ecs,]
     }
-    df <- df[,!colnames(df) %in% c('tx_id', 'transcript', 'ensembl_id', 'exon', 'exon_id', 'symbol')]
-    df <- distinct(data.table(df))
 
     # remove suffixes from sample names
     sample_names <- !colnames(df) %in% c('ec_names', 'ensembl_id', 'gene_id', 'symbol')
-    colnames(df)[sample_names] <- sapply(colnames(df)[sample_names], function(x){strsplit(x, '_')[[1]][1]})
+
+    if (!any(colnames(df)%like%'Dm|Hs')) {
+        colnames(df)[sample_names] <- sapply(colnames(df)[sample_names], function(x){strsplit(x, '_')[[1]][1]})
+    }
 
     return(df)
 }

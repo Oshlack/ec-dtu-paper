@@ -2,7 +2,7 @@
 title: "Fast and accurate differential transcript usage by testing equivalence class counts"
 author:
 - Marek Cmero^1
-- Nadia Davidson^1†^
+- Nadia Davidson^1,2†^
 - Alicia Oshlack^1,2†^*
 output:
   html_document:
@@ -85,14 +85,14 @@ hs_ref <- 'ref/hsapiens_transcript_reference.txt.gz'
 bm_ref <- 'ref/mm9_transcript_reference.txt.gz'
 
 # load EC data from complete matrices
-dm_ec <- load_ec_data('data/drosophila/ec_counts/drosophila_ec_matrix.txt.gz', dm_lookup, dm_ref)
-hs_ec <- load_ec_data('data/hsapiens/ec_counts/hsapiens_ec_matrix.txt.gz', hs_lookup, hs_ref)
-bm_ec <- load_ec_data('data/bottomly/ec_counts/bottomly_ec_counts.txt.gz', bm_lookup, bm_ref)
+dm_ec <- load_ec_data('data/drosophila/ec_counts/drosophila_ec_matrix.txt.gz', tx_lookup=dm_lookup, reference=dm_ref)
+hs_ec <- load_ec_data('data/hsapiens/ec_counts/hsapiens_ec_matrix.txt.gz', tx_lookup=hs_lookup, reference=hs_ref)
+bm_ec <- load_ec_data('data/bottomly/ec_counts/bottomly_ec_counts.txt.gz', tx_lookup=bm_lookup, reference=bm_ref)
 
 # load transcript data from salmon quant.sf files
-dm_tx <- load_tx_data('data/drosophila/tx_counts/', dm_lookup, dm_ref)
-hs_tx <- load_tx_data('data/hsapiens/tx_counts/', hs_lookup, hs_ref)
-bm_tx <- load_tx_data('data/bottomly/tx_counts/', bm_lookup, bm_ref)
+dm_tx <- load_tx_data('data/drosophila/tx_counts/', tx_lookup=dm_lookup, reference=dm_ref)
+hs_tx <- load_tx_data('data/hsapiens/tx_counts/', tx_lookup=hs_lookup, reference=hs_ref)
+bm_tx <- load_tx_data('data/bottomly/tx_counts/', tx_lookup=bm_lookup, reference=bm_ref)
 
 # load exon data from dexseq counts
 dm_ex <- load_ex_data('data/drosophila/exon_counts/', 'Dm')
@@ -499,12 +499,12 @@ res <- rbind(res,
              get_fdr_tpr_stats(test, truth, results, thresholds, 'hsapiens', filt_genes=TRUE))
 res <- res[res$method%like%'salmon|equiv|exon',]
 
-cols <- c('transcripts_salmon' = '#d73027',
-          'transcripts_salmon_filt' = '#fc8d59',
-          'equivalence_class' = '#fdae61',
-          'equivalence_class_filt' = '#fee090',
-          'dexseq_count_exons' = '#91bfdb',
-          'dexseq_count_exons_filt' = '#4575b4')
+cols <- c('transcripts_salmon' = '#000000',
+          'transcripts_salmon_filt' = '#E69F00',
+          'equivalence_class' = '#56B4E9',
+          'equivalence_class_filt' = '#0072B2',
+          'dexseq_count_exons' = '#F0E442',
+          'dexseq_count_exons_filt' = '#CC79A7')
 
 res$method <- factor(res$method, levels=names(cols))
 ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
@@ -568,7 +568,8 @@ lv_ec <- load_ec_data('data/love/ec_counts/love_ec_matrix.txt.gz', reference=lv_
 lv_tx <- load_tx_data('data/love/tx_counts/', reference=lv_ref)
 lv_ex <- load_ex_data('data/love/exon_counts/', 'sample')
 
-group <- rep(c('c1','c2'), each=12)
+group <- rep('c1', 24)
+group[grep('c02',colnames(lv_ec))] <- 'c2'
 lv_ec <- run_diffsplice(lv_ec, group, 'sample', feature='ec')
 lv_tx <- run_diffsplice(lv_tx, group, 'sample', feature='tx')
 lv_ex <- run_diffsplice(lv_ex, group, 'lv', feature='ex')
