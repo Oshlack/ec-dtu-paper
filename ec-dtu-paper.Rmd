@@ -21,7 +21,7 @@ E-mail: alicia.oshlack@mcri.edu.au
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(autodep        = TRUE,
-                      cache          = FALSE,
+                      cache          = TRUE,
                       cache.path     = "cache/",
                       cache.comments = TRUE,
                       echo           = FALSE,
@@ -326,9 +326,11 @@ seeds <- c(7601, 6989, 3551, 2774, 1389,
            6589, 9151, 4694, 1917, 4324,
            5513, 2414, 1424, 6536, 7624)
 
+all_comps <- NULL
 for(i in 1:iters) {
     set.seed(seeds[i])
     comp <- get_random_comp(bm_samples, N)
+    all_comps <- rbind(all_comps, data.frame(comp, iter=i))
 
     # equivalence classes
     counts <- data.frame(counts_ec[,.SD,.SDcols = names(counts_ec) %in% comp$sample])
@@ -343,6 +345,8 @@ for(i in 1:iters) {
     counts <- data.frame(counts_ex[,.SD,.SDcols = names(counts_ex) %in% comp$sample])
     res_ex[[i]] <- run_dexseq(counts, genes_ex, comp$type, 0, 0)[['gene_FDR']]; gc()
 }
+print('Sample usage')
+print(table(all_comps$sample))
 
 cols <- c('Transcripts' = '#a6cee3',
           'Equivalence classes' = '#1f78b4',
@@ -572,7 +576,7 @@ group <- rep('c1', 24)
 group[grep('c02',colnames(lv_ec))] <- 'c2'
 lv_ec <- run_diffsplice(lv_ec, group, 'sample', feature='ec')
 lv_tx <- run_diffsplice(lv_tx, group, 'sample', feature='tx')
-lv_ex <- run_diffsplice(lv_ex, group, 'lv', feature='ex')
+lv_ex <- run_diffsplice(lv_ex, group, 'sample', feature='ex')
 ```
 
 # Supplementary Figure 8
@@ -580,6 +584,7 @@ lv_ex <- run_diffsplice(lv_ex, group, 'lv', feature='ex')
 Performance of exon count DTU derived from DEXSeq's count pipeline and EC and transcript DTU derived from salmon on data from Love et al.[6] for nominal FDR cutoffs of 0.01, 0.05 and 0.1.
 
 ```{r SupplementaryFigure8, fig.width=6, fig.height=6}
+# install the rnaseqDTU package (https://github.com/mikelove/rnaseqDTU)
 library(rnaseqDTU)
 
 results <- NULL
@@ -598,7 +603,6 @@ txinfo <- inner_join(txinfo, lookup, by='transcript')
 txinfo$ds_status <- txinfo$gene %in% dtu_genes
 
 truth <- data.frame(gene=lookup$gene, ds_status=as.numeric(lookup$gene %in% dtu_genes))
-
 tested_genes <- rownames(results[[names(results)[1]]])
 for(rname in 2:length(results)) {
     rgenes <- rownames(results[[rname]])
@@ -610,8 +614,7 @@ res <- NULL
 for(i in names(results)) {
     stats <- calculate_stats(thresholds, truth, results[[i]], gene_id = 'gene', fdr_id = 'FDR')
     fdrs <- stats[1,]; tprs <- stats[2,]
-    res <- rbind(res, data.frame(method=i, FDR=fdrs, TPR=tprs,
-                                 thresholds=thresholds, species=species))
+    res <- rbind(res, data.frame(method=i, FDR=fdrs, TPR=tprs, thresholds=thresholds))
 }
 
 cols <- c('transcripts_salmon' = '#a6cee3',
@@ -634,7 +637,6 @@ ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
 ```{r}
 options(width = 120); sessioninfo::session_info()
 ```
-
 
 # References
 

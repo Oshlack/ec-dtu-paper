@@ -31,12 +31,14 @@ install.packages('RColorBrewer')
 install.packages('data.table')
 install.packages('readr')
 install.packages('dplyr')
+install.packages('devtools')
 
 source('http://bioconductor.org/biocLite.R')
 biocLite('edgeR')
 biocLite('DEXSeq')
 biocLite('DRIMSeq')
 biocLite('tximport')
+devtools::install_github('mikelove/rnaseqDTU')
 ```
 
 Generating an equivalence class matrix
@@ -54,6 +56,8 @@ python create_salmon_ec_count_matrix.py \
        sample1/aux_info/eq_classes.txt sample2/aux_info/eq_classes.txt \
        sample1,sample2 ec_matrix.txt
 ```
+
+NOTE: Using [Python 3+](https://www.python.org/download/releases/3.0/) is highly recommended. Running the script using Python 2 will be significantly slower.
 
 A script for transforming Kallisto[4] output is also included. Kallisto must be run using the `--batch` parameter (see [https://pachterlab.github.io/kallisto/manual](https://pachterlab.github.io/kallisto/manual)), with all samples concurrently. The usage for the script is as follows:
 
