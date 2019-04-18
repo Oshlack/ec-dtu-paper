@@ -16,6 +16,8 @@ Running the analyses
 
 First download the simulation truth data from [http://imlspenticton.uzh.ch/robinson_lab/splicing_comparison/](http://imlspenticton.uzh.ch/robinson_lab/splicing_comparison/) and place all the text files under `ref/soneson_results/`. Next, download the RunInfo metadata table for the Bottomly data set from [NCBI](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP004777). Put this file under `ref/`.
 
+Download the feature counts for the Love et al. data from [10.5281/zenodo.2644723](https://doi.org/10.5281/zenodo.2644723). Un-tar the data into the notebook directory.
+
 The `ec-dtu-paper.Rmd` markdown notebook can now be run using knitr in RStudio. This will run the paper analyses and generate the figures under the `figures` folder. This analysis will be time consuming to run from start to finish, and a multi-core and high-memory machine is therefore recommended.
 
 Dependencies

@@ -576,6 +576,7 @@ print(ex_tx_stats)
 
 
 ```{r run-love}
+#NOTE: download the feature counts from https://doi.org/10.5281/zenodo.2644723
 lv_ref <- 'ref/gencode_v28_transcript_reference.txt.gz'
 
 # load EC data from complete matrices
