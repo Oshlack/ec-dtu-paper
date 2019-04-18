@@ -50,7 +50,6 @@ run_diffsplice <- function(df, group, sample_regex,
         n.small <- min(as.numeric(table(group)))
         d <- dmFilter(d, min_samps_feature_expr=n.small,
                       min_feature_expr=10,
-                      min_samps_feature_prop=n.small,
                       min_samps_gene_expr=n,
                       min_gene_expr=10)
     }

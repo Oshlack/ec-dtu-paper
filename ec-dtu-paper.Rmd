@@ -308,11 +308,8 @@ venn.plot <- venn.diagram(dt_truth,
 grid.draw(venn.plot)
 ```
 
-# Figure 3
 
-Shows the performance of the equivalence class method for differential transcript usage, compared to other state-of-the-art methods described in Soneson et al.[3] (top). The bottom plots show the ability of the equivalence class, transcript and exon-based methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly data, using only a (randomly selected) subset of samples (3 vs. 3) across 20 iterations. The union of all genes called as significant across all three methods is used for the FDR, and the intersect (genes called by all three methods) is used for the TPR. Full results (union, intersect and each method's individual truth set) is shown in Supplementary Figure 3.
-
-```{r Figure3, fig.width=12, fig.height=10.5}
+```{r run-bottomly}
 # Bottomly data subset testing
 N = 3
 iters = 20
@@ -347,40 +344,51 @@ for(i in 1:iters) {
 }
 print('Sample usage')
 print(table(all_comps$sample))
+```
 
-cols <- c('Transcripts' = '#a6cee3',
-          'Equivalence classes' = '#1f78b4',
-          'Exons' = '#b2df8a')
+# Figure 3
 
+(top) The equivalence class method compared to other state-of-the-art methods on simulated data described in Soneson et al.[3]. The circles show the observed true positive rate (TPR) versus false discovery rate (FDR) at three nominal FDR cut-offs (0.01, 0.05 and 0.1) for each method. The dotted lines indicate the FDR at the nominal cut-off values of 0.01, 0.05 and 0,1 (i.e. if the FDR is adequately controlled, the three circles should match up with these lines). (bottom) The ability of the equivalence class, transcript and exon-based methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly data, using only a (randomly selected) subset of samples (3 vs. 3) across 20 iterations using FDR < 0.05 (FDR = 0.05 is indicated by the dotted line). The union of all genes called as significant across all three methods is used to calculate the FDR, and the intersect (genes called by all three methods) is used for the TPR. Full results (union, intersect and each method’s individual truth set) are shown in Supplementary Figure 3, which also shows lines connecting the results from each iteration.
+
+```{r Figure3, fig.width=12, fig.height=10.5}
+# f3a cols
+cols <- c('transcripts_salmon' = '#a6cee3',
+          'equivalence_class' = '#1f78b4',
+          'dexseq_count_exons' = '#b2df8a',
+          'miso_assignable' = '#33a02c')
+# f3b-c cols
+rcols <- c('Transcripts' = '#a6cee3',
+             'Equivalence classes' = '#1f78b4',
+             'Exons' = '#b2df8a')
 results <- get_subset_tests_results(res_ec, res_tx, res_ex, true_ec, true_tx, true_ex)
-f3b <- plot_bottomly_boxplot(results, cols, title='FDR (union)', toplot='FDR', hline=cutoff)
-f3c <- plot_bottomly_boxplot(results, cols, title='Recall fraction (intersect)', toplot='TPR')
+f3b <- plot_bottomly_boxplot(results, rcols, title='FDR (union)', toplot='FDR', hline=cutoff)
+f3c <- plot_bottomly_boxplot(results, rcols, title='Recall fraction (intersect)', toplot='TPR')
 
 grid.arrange(f3a, f3b, f3c, layout_matrix=rbind(c(1,1), c(2,3)), nrow=2)
 ```
 
 # Supplementary Figure 3
 
-Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly et al.[2] data using random subsets of 3 vs. 3 samples across 20 iterations. The lines between the plots join data points from the same iteration. Each row uses a different 'truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
+Shows the ability of the three methods to recreate the results of a full comparison (10 vs. 11) of the Bottomly et al.[2] data using random subsets of 3 vs. 3 samples across 20 iterations using FDR < 0.05 (FDR = 0.05 is indicated by the dotted line). The lines between the plots join data points from the same iteration. Each row uses a different `truth' set: union is the set of genes called significant by any method, intersect is the set of genes called significant by all methods, and individual is the set of genes called significant by that method only.
 
 ```{r SupplementaryFigure3, fig.width=12, fig.height=15.75}
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='union', TPR='union'))
-s3a <- plot_bottomly_boxplot(results, cols, title='FDR (union)', toplot='FDR', hline=cutoff, lines=T)
-s3b <- plot_bottomly_boxplot(results, cols, title='Recall fraction (union)', toplot='TPR', lines=T)
+s3a <- plot_bottomly_boxplot(results, rcols, title='FDR (union)', toplot='FDR', hline=cutoff, lines=T)
+s3b <- plot_bottomly_boxplot(results, rcols, title='Recall fraction (union)', toplot='TPR', lines=T)
 
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='intersect', TPR='intersect'))
-s3c <- plot_bottomly_boxplot(results, cols, title='FDR (intersect)', toplot='FDR', hline=cutoff, lines=T)
-s3d <- plot_bottomly_boxplot(results, cols, title='Recall fraction (intersect)', toplot='TPR', lines=T)
+s3c <- plot_bottomly_boxplot(results, rcols, title='FDR (intersect)', toplot='FDR', hline=cutoff, lines=T)
+s3d <- plot_bottomly_boxplot(results, rcols, title='Recall fraction (intersect)', toplot='TPR', lines=T)
 
 results <- get_subset_tests_results(res_ec, res_tx, res_ex,
                                     true_ec, true_tx, true_ex,
                                     method = c(FDR='individual', TPR='individual'))
-s3e <- plot_bottomly_boxplot(results, cols, title='FDR (individual)', toplot='FDR', hline=cutoff, lines=T)
-s3f <- plot_bottomly_boxplot(results, cols, title='Recall fraction (individual)', toplot='TPR', lines=T)
+s3e <- plot_bottomly_boxplot(results, rcols, title='FDR (individual)', toplot='FDR', hline=cutoff, lines=T)
+s3f <- plot_bottomly_boxplot(results, rcols, title='Recall fraction (individual)', toplot='TPR', lines=T)
 
 grid.arrange(s3a, s3b,
              s3c, s3d,
@@ -389,7 +397,7 @@ grid.arrange(s3a, s3b,
 
 # Supplementary Figure 4
 
-The number of false positives versus each gene's rank (by FDR) for one iteration (3 vs. 3) of the Bottomly subset tests for the top 500 genes. The union of significant genes across all methods was used as the truth set.
+The number of false positives versus each gene's rank (by FDR) for one iteration (3 vs. 3) of the Bottomly[2] subset tests for the top 500 genes. The union of significant genes across all methods was used as the truth set.
 
 ```{r SupplementaryFigure4, fig.width=10.5, fig.height=7.5}
 pick_iter = 1
@@ -406,18 +414,15 @@ ggplot(rp, aes(gene_rank, false_positives, colour = feature)) +
     theme_bw() +
     xlim(0,500) +
     ylim(0,500) +
-    scale_color_manual(values = cols) +
+    scale_color_manual(values = rcols) +
     ylab('False positives') +
     xlab('Gene rank') +
     theme(legend.title = element_blank(),
           text = element_text(size = 18))
 ```
 
-# Supplementary Figure 5
 
-Kallisto[4] versus salmon's[5] performance on the Bottomly subset testing experiments, using each method's significant genes from the full (10 vs. 11) run as the truth set for calculating both metrics.
-
-```{r SupplementaryFigure5, fig.width=12, fig.height=5.25}
+```{r run-kallisto}
 # load in kallisto data
 bm_kec <- load_ec_data('data/bottomly/ec_counts/bottomly_kallisto_ec_counts.txt.gz', NA, bm_ref, salmon=F)
 counts_kec <- distinct(bm_kec[,.SD,.SDcols = names(bm_kec) %like% 'SRR|gene_id|ec_names'])
@@ -438,7 +443,13 @@ for(i in 1:iters) {
     counts <- data.frame(counts_kec[,.SD,.SDcols = names(counts_kec) %in% comp$sample])
     res_kec[[i]] <- run_dexseq(counts, genes_kec, comp$type, 0, 0)[['gene_FDR']]; gc()
 }
+```
 
+# Supplementary Figure 5
+
+Kallisto[4] versus Salmon's[5] performance on the Bottomly[2] subset testing experiments, using each method's significant genes from the full (10 vs. 11) run as the truth set for calculating both metrics.
+
+```{r SupplementaryFigure5, fig.width=12, fig.height=5.25}
 # calculate kallisto results
 kal_bm_qec <- bm_kec_results[['gene_FDR']]
 true_kec <- unique(kal_bm_qec[kal_bm_qec$FDR<cutoff,]$gene)
@@ -465,7 +476,7 @@ ggplot(res, aes(salmon, kallisto)) +
 
 # Supplementary Figure 6
 
-Shows the performance of the equivalence class, transcript (Salmon) and exon-based (DEXSeq-count) methods with _DRIMSeq_ filtering (minimum feature expression = 10, minimum gene expression = 10, gene must be expressed in at all 6 samples and transcript must be expressed in at least 3 samples).
+Performance of ECC, transcript count (using Salmon) and exon count (using DEXSeq-count) methods on the Soneson[3] data with and without DRIMSeq[6] filtering (see paper methods for full filtering criteria).
 
 ```{r SupplementaryFigure6, fig.width=12, fig.height=6}
 group <- rep(c('c1','c2'), each=3)
@@ -525,7 +536,7 @@ ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
 
 # Supplementary Figure 7
 
-An example EC usage plot for a single gene from the hsapiens DECU results. Log EC usage is shown across each equivalence class for both conditions. Yellow blocks indicate significant ECs. As ECs do not correspond easily to genomic locations, no special ordering is applied the the ECs. In the given example, transcripts mapping to each significant EC can be observed in the data. The significant ec142580 corresponds to a single transcript (ENST00000443443), indicating that interpretation can be straight-forward if the EC is associated with a single transcript.
+An example EC usage plot for a single gene from the Soneson[3] hsapiens DECU results. Log EC usage is shown across each equivalence class for both conditions. Yellow blocks indicate significant ECs. As ECs do not correspond easily to genomic locations, no special ordering is applied the ECs. In the given example, transcripts mapping to each significant EC can be obtained. The significant ec142580 corresponds to a single transcript (ENST00000443443), indicating that interpretation can be straight-forward if the EC is associated with a single transcript. See Section 6.4 of the EC DTU vignette (https://github.com/Oshlack/ec-dtu-paper/wiki/Vignette) for how to run the plotting code.
 
 ```{r SupplementaryFigure7, fig.width=12, fig.height=6}
 # create EC/gene_id lookup table
@@ -540,7 +551,7 @@ plot_ec_usage(hs_ec_results$dexseq_results, 'ENSG00000004766', lookup)
 
 Average number of exons and transcripts per gene from the hg38 ensembl reference.
 
-```{r}
+```{r SupplementaryTable2}
 library(biomaRt)
 
 mart <- useMart('ENSEMBL_MART_ENSEMBL',
@@ -564,7 +575,7 @@ print(ex_tx_stats)
 ```
 
 
-```{r}
+```{r run-love}
 lv_ref <- 'ref/gencode_v28_transcript_reference.txt.gz'
 
 # load EC data from complete matrices
@@ -581,7 +592,7 @@ lv_ex <- run_diffsplice(lv_ex, group, 'sample', feature='ex')
 
 # Supplementary Figure 8
 
-Performance of exon count DTU derived from DEXSeq's count pipeline and EC and transcript DTU derived from salmon on data from Love et al.[6] for nominal FDR cutoffs of 0.01, 0.05 and 0.1.
+Performance of ECC, transcript count (using Salmon) and exon count (using DEXSeq-count) methods on the Love et al.[7] data (12 vs. 12 samples). The points show nominal FDR cutoffs of 0.01, 0.05 and 0.1.
 
 ```{r SupplementaryFigure8, fig.width=6, fig.height=6}
 # install the rnaseqDTU package (https://github.com/mikelove/rnaseqDTU)
@@ -600,11 +611,11 @@ colnames(lookup) <- c('gene', 'transcript', 'exon', 'symbol','exon_id')
 txinfo <- read.delim('ref/sim_tx_info.txt.gz')
 colnames(txinfo)[1] <- 'transcript'
 txinfo <- inner_join(txinfo, lookup, by='transcript')
-txinfo$ds_status <- txinfo$gene %in% dtu_genes
+txinfo$ds_status <- txinfo$gene %in% dtu_truth_genes
 
-truth <- data.frame(gene=lookup$gene, ds_status=as.numeric(lookup$gene %in% dtu_genes))
+truth <- data.frame(gene=lookup$gene, ds_status=as.numeric(lookup$gene %in% dtu_truth_genes))
 tested_genes <- rownames(results[[names(results)[1]]])
-for(rname in 2:length(results)) {
+for(rname in names(results)[2:length(results)]) {
     rgenes <- rownames(results[[rname]])
     tested_genes <- intersect(tested_genes, rgenes)
 }
@@ -634,7 +645,7 @@ ggplot(res, aes(FDR, TPR, group=method, colour=method)) +
 
 # Session information
 
-```{r}
+```{r sess-info}
 options(width = 120); sessioninfo::session_info()
 ```
 
@@ -650,4 +661,6 @@ options(width = 120); sessioninfo::session_info()
 
 [5] Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., & Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. Nature Methods, 14(4), 021592. https://doi.org/10.1038/nmeth.4197
 
-[6] Love, M. I., Soneson, C., & Patro, R. (2018). Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification. F1000Research, 7, 952. https://doi.org/10.12688/f1000research.15398.1
+[6] Nowicka, M., & Robinson, M. D. (2016). DRIMSeq: a Dirichlet-multinomial framework for multivariate count outcomes in genomics. F1000Research, 5(0), 1356. https://doi.org/10.12688/f1000research.8900.2
+
+[7] Love, M. I., Soneson, C., & Patro, R. (2018). Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification. F1000Research, 7, 952. https://doi.org/10.12688/f1000research.15398.1

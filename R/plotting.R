@@ -11,7 +11,6 @@ plot_bottomly_boxplot <- function(results, cols, title='', toplot=c('FDR', 'TPR'
             ylab('') +
             xlab('') +
             ggtitle(title) +
-            geom_hline(yintercept = 0.05, colour='grey',  linetype='dotted') +
             scale_color_manual(values = cols)
     if(lines) {
         p <- p + geom_line(alpha=0.3, colour='grey')
