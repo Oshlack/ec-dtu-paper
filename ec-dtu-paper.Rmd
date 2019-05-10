@@ -1,5 +1,5 @@
 ---
-title: "Fast and accurate differential transcript usage by testing equivalence class counts"
+title: "Using equivalence class counts for fast and accurate testing of differential transcript usage"
 author:
 - Marek Cmero^1
 - Nadia Davidson^1,2†^
@@ -537,14 +537,12 @@ An example EC usage plot for a single gene from the Soneson[3] hsapiens DECU res
 
 ```{r SupplementaryFigure7, fig.width=12, fig.height=6}
 # create EC/gene_id lookup table
-lookup <- read.delim(hs_ref, header=F, sep=' ')
-colnames(lookup) <- c('gene_id', 'transcript', 'exon', 'symbol','exon_id')
-
-tmp <- distinct(hs_ec[,c('gene_id', 'ec_names')])
-lookup <- inner_join(lookup, tmp, by='gene_id')
+lookup <- distinct(hs_ec[,c('ensembl_id', 'ec_names', 'gene_id')])
+colnames(lookup)[1] <- 'transcript'
 lookup$id <- paste(lookup$gene_id, lookup$ec_names, sep=':')
 
-plot_ec_usage(hs_ec_results$dexseq_results, 'ENSG00000004766', lookup)
+ecu <- plot_ec_usage(hs_ec_results$dexseq_results, 'ENSG00000004766', lookup)
+ecu
 ```
 
 # Supplementary Table 2
