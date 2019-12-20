@@ -59,6 +59,8 @@ python create_salmon_ec_count_matrix.py \
        sample1,sample2 ec_matrix.txt
 ```
 
+**NOTE:** for later versions of salmon, do not use the `--validateMappings` flag, **unless** you also use the `--hardFilter` flag. Otherwise, ECs cannot be matched correctly between samples.
+
 A script for transforming Kallisto[4] output is also included. Kallisto must be run using the `--batch` parameter (see [https://pachterlab.github.io/kallisto/manual](https://pachterlab.github.io/kallisto/manual)), with all samples concurrently. The usage for the script is as follows:
 
 ```
